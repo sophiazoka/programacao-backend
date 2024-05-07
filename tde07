@@ -1,0 +1,54 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const app = express();
+const port = 3000;
+
+app.use(bodyParser.json());
+
+let taskId = 0;
+const tasks = [];
+
+
+app.get('/tasks', (req, res) => {
+    res.status(200).json(tasks);
+});
+
+
+app.post('/tasks', (req, res) => {
+    const { name, description, isDone } = req.body;
+    const newTask = { id: ++taskId, name, description, isDone: !!isDone };
+    tasks.push(newTask);
+    res.status(201).json(newTask);
+});
+
+
+app.put('/tasks/:id', (req, res) => {
+    const { id } = req.params;
+    const { name, description, isDone } = req.body;
+    const task = tasks.find(task => task.id === parseInt(id));
+    if (task) {
+        task.name = name;
+        task.description = description;
+        task.isDone = isDone;
+        res.status(200).json(task);
+    } else {
+        res.status(404).send('Task not found');
+    }
+});
+
+
+app.delete('/tasks/:id', (req, res) => {
+    const { id } = req.params;
+    const index = tasks.findIndex(task => task.id === parseInt(id));
+    if (index !== -1) {
+        tasks.splice(index, 1);
+        res.status(204).send();
+    } else {
+        res.status(404).send('Task not found');
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Todo app listening at http://localhost:${port}`);
+});
